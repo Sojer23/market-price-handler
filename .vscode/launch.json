@@ -12,6 +12,15 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/ingestMarketData/test/test01.js"
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "Test getLastPriceByCurrency",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/getLastPriceByCurrency/test/test01.js"
         }
     ]
 }

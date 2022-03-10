@@ -27,13 +27,15 @@ exports.handler = async (event, context) => {
     const validatedPrices = await mapModelValidationData(dataJSON);
 
     //Push prices objects to AWS DynamoDB
-    validatedPrices.forEach((price) => {
-        try {
-            pushToDynamoDB(price);
-        } catch (error) {
-            console.error(error);
-        }
-    })
+    pushToDynamoDB(validatedPrices);
+
+    // validatedPrices.forEach((price) => {
+    //     try {
+    //         pushToDynamoDB(price);
+    //     } catch (error) {
+    //         console.error(error);
+    //     }
+    // });
 
     return {
         statusCode: 201,
@@ -50,7 +52,7 @@ exports.handler = async (event, context) => {
  */
 async function csvToJSON(params) {
     const stream = S3.getObject(params).createReadStream();
-    const csv_props = { noheader: true, headers: ['id', 'currency', 'bid', 'ask', 'timestamp'] };
+    const csv_props = { noheader: true, headers: ['id', 'currency', 'bid', 'ask', 'ts'] };
     const dataJSON = await csv(csv_props).fromStream(stream);
 
     return dataJSON;
@@ -68,7 +70,7 @@ async function mapModelValidationData(dataJSON) {
     const validatedPrices = dataJSON.map((p) => {
         let valPrice = new Price({
             data_id: p.id,
-            timestamp: p.timestamp,
+            ts: p.ts,
             currency: p.currency,
             bid: p.bid,
             ask: p.ask
@@ -80,20 +82,37 @@ async function mapModelValidationData(dataJSON) {
     return validatedPrices;
 }
 
-async function pushToDynamoDB(price) {
+async function pushToDynamoDB(prices) {
 
-    var params = {
-        TableName: 'fx_market_prices',
-        Item: price
+    //Create the params structure for batchWrite
+    let pricesToPush = [];
+    prices.forEach((p) => {
+        pricesToPush.push({
+            PutRequest: {
+                Item: {
+                    currency: p.currency,
+                    data_id: p.data_id,
+                    ask: p.ask,
+                    bid: p.bid,
+                    ts: p.ts
+                }
+            }
+        })
+    })
+
+    const params = {
+        RequestItems: {
+            'fx_market_prices': pricesToPush,
+        }
     };
 
     const data = await
-        ddb.put(params, function (err, data) {
+        ddb.batchWrite(params, function (err, data) {
             if (err) {
                 console.log("Error", err);
             } else {
-                console.log("Success");
-                return { codError: 200 };
+                console.log(JSON.stringify(data, null, 2));
+                console.log("Prices saved!");
             }
         });
 

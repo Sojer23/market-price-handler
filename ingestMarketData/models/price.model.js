@@ -6,7 +6,7 @@ const priceSchema = new Schema({
     currency: { type: String, required: true, enum: ['EUR/USD', 'GBP/USD', 'EUR/JPY'] },
     ask: { type: Number, required: true, set: addComission },
     bid: { type: Number, required: true, set: substractComission },
-    timestamp: { type: String, required: true, set: timestampToISODate, default: Date.now() }
+    ts: { type: String, required: true, set: timestampToISODate, default: Date.now() }
 }, { _id: false });
 
 //Setters
