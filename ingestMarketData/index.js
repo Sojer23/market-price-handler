@@ -29,14 +29,6 @@ exports.handler = async (event, context) => {
     //Push prices objects to AWS DynamoDB
     pushToDynamoDB(validatedPrices);
 
-    // validatedPrices.forEach((price) => {
-    //     try {
-    //         pushToDynamoDB(price);
-    //     } catch (error) {
-    //         console.error(error);
-    //     }
-    // });
-
     return {
         statusCode: 201,
         response: validatedPrices
