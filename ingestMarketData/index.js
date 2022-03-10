@@ -37,7 +37,7 @@ exports.handler = async (event, context) => {
 
     return {
         statusCode: 201,
-        response: validatedPrices ?? 'Error ingesting data'
+        response: validatedPrices
     };
 };
 
